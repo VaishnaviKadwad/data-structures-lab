@@ -1,62 +1,104 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-int *queue;
-int capacity;
-int front = 0;
+int *queue = NULL;
+int front = -1;
 int rear = -1;
-int count = 0;
+int size = 0;
+int capacity = 0;
+
+void resizeQueue()
+{
+    int newCapacity = (capacity == 0) ? 1 : capacity * 2;
+
+    int *newQueue = (int *)malloc(newCapacity * sizeof(int));
+
+    if (newQueue == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+        newQueue[i] = queue[(front + i) % capacity];
+    }
+
+    free(queue);
+
+    queue = newQueue;
+    capacity = newCapacity;
+
+    if (size == 0)
+    {
+        front = -1;
+        rear = -1;
+    }
+    else
+    {
+        front = 0;
+        rear = size - 1;
+    }
+}
 
 void enqueue(int value)
 {
-    if (count == capacity)
+    if (size == capacity)
     {
-        printf("OVERFLOW\n");
-        return;
+        resizeQueue();
     }
 
-    rear = (rear + 1) % capacity;
-    queue[rear] = value;
-    count++;
+    if (front == -1 && rear == -1)
+    {
+        front = rear = 0;
+    }
+    else
+    {
+        rear = (rear + 1) % capacity;
+    }
 
-    printf("ENQUEUED %d\n", value);
+    queue[rear] = value;
+    size++;
+
+    printf("%d inserted into queue\n", value);
 }
 
 void dequeue()
 {
-    if (count == 0)
+    if (size == 0)
     {
-        printf("UNDERFLOW\n");
+        printf("Queue is empty\n");
         return;
     }
 
-    printf("DEQUEUED %d\n", queue[front]);
+    printf("Deleted element: %d\n", queue[front]);
 
-    front = (front + 1) % capacity;
-    count--;
-
-    if (count == 0)
+    if (size == 1)
     {
-        front = 0;
+        front = -1;
         rear = -1;
     }
+    else
+    {
+        front = (front + 1) % capacity;
+    }
+
+    size--;
 }
 
 void display()
 {
-    if (count == 0)
+    if (size == 0)
     {
-        printf("QUEUE EMPTY\n");
+        printf("Queue is empty\n");
         return;
     }
 
-    printf("QUEUE");
+    printf("Queue elements are:\n");
 
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < size; i++)
     {
-        int index = (front + i) % capacity;
-        printf(" %d", queue[index]);
+        printf("%d ", queue[(front + i) % capacity]);
     }
 
     printf("\n");
@@ -64,41 +106,46 @@ void display()
 
 int main()
 {
-    int Q;
-    char operation[20];
-    int value;
+    int choice, value;
 
-    scanf("%d", &capacity);
-
-    queue = (int *)malloc(capacity * sizeof(int));
-
-    if (queue == NULL)
+    while (1)
     {
-        return 1;
+        printf("\n1. Enqueue");
+        printf("\n2. Dequeue");
+        printf("\n3. Display");
+        printf("\n4. Exit");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                printf("Enter the element: ");
+                scanf("%d", &value);
+
+                enqueue(value);
+                break;
+
+            case 2:
+                dequeue();
+                break;
+
+            case 3:
+                display();
+                break;
+
+            case 4:
+                free(queue);
+                queue = NULL;
+
+                printf("Exiting\n");
+                return 0;
+
+            default:
+                printf("Invalid choice\n");
+        }
     }
-
-    scanf("%d", &Q);
-
-    for (int i = 0; i < Q; i++)
-    {
-        scanf("%s", operation);
-
-        if (strcmp(operation, "ENQUEUE") == 0)
-        {
-            scanf("%d", &value);
-            enqueue(value);
-        }
-        else if (strcmp(operation, "DEQUEUE") == 0)
-        {
-            dequeue();
-        }
-        else if (strcmp(operation, "DISPLAY") == 0)
-        {
-            display();
-        }
-    }
-
-    free(queue);
 
     return 0;
 }
