@@ -54,7 +54,10 @@ void insert()
 
 void delete()
 {
+    int key;
     NODE temp;
+    printf("Enter the key to be deleted: ");
+    scanf("%d", &key);
 
     /* Base condition 1: Empty list */
     if (head == NULL)
@@ -65,26 +68,28 @@ void delete()
 
     temp = head;
 
-    /* Traverse to the last node */
-    while (temp->next != NULL)
+    while(temp!=NULL && temp->data != key)
     {
         temp = temp->next;
     }
 
-    /* Base condition 2: Only one node */
-    if (head->next == NULL)
+    if (temp == NULL)
     {
-        printf("Deleted item is %d\n", head->data);
-        free(head);
-        head = NULL;
+        printf("Key not found\n");
         return;
     }
+    if(temp->prev != NULL)
+    {
+        temp->prev->next = temp->next;
+    }
+    if(temp->next != NULL)
+    {
+        temp->next->prev = temp->prev;
+    }
 
-    /* Delete the last node */
     printf("Deleted item is %d\n", temp->data);
-
-    temp->prev->next = NULL;
     free(temp);
+
 }
 
 void display()
@@ -116,8 +121,8 @@ int main()
 
     while (1)
     {
-        printf("\n1. INSERT AT END\n");
-        printf("2. DELETE FROM END\n");
+        printf("\n1. INSERT \n");
+        printf("2. DELETE\n");
         printf("3. DISPLAY\n");
         printf("4. EXIT\n");
         printf("Enter your choice: ");
