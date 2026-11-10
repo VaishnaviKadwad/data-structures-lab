@@ -1,8 +1,7 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
-#define MAX_TERMS 60005
-#define MAX_COLUMNS 200005
+#define MAX 100
 
 typedef struct
 {
@@ -11,217 +10,233 @@ typedef struct
     int value;
 } sparse;
 
-/* Function declarations */
-void readMatrix(sparse a[], int *rows, int *cols);
+void readMatrix(int matrix[MAX][MAX], int *rows, int *cols);
+int convertToSparse(int matrix[MAX][MAX], int rows, int cols, sparse a[]);
 void displaySparse(sparse a[]);
 void simpleTranspose(sparse a[], sparse b[]);
 void fastTranspose(sparse a[], sparse b[]);
 
-
 int main()
 {
-    static sparse a[MAX_TERMS];
-    static sparse b[MAX_TERMS];
+    int matrix[MAX][MAX];
+    int rows, cols, choice;
 
-    char command[25];
-    int rows, cols;
+    sparse a[MAX], b[MAX];
 
-    /* Read command */
-    scanf("%24s", command);
+    readMatrix(matrix, &rows, &cols);
 
-    /* Read rows and columns */
-    scanf("%d %d", &rows, &cols);
+    convertToSparse(matrix, rows, cols, a);
 
-    /* Read matrix and convert directly to sparse form */
-    readMatrix(a, &rows, &cols);
+    printf("\nSparse Matrix (3-Tuple Representation):\n");
+    displaySparse(a);
 
-    if (strcmp(command, "SPARSE") == 0)
+    while (1)
     {
-        displaySparse(a);
-    }
-    else if (strcmp(command, "SIMPLE") == 0)
-    {
-        simpleTranspose(a, b);
-        displaySparse(b);
-    }
-    else if (strcmp(command, "FAST") == 0)
-    {
-        fastTranspose(a, b);
-        displaySparse(b);
+        printf("\n1. Simple Transpose");
+        printf("\n2. Fast Transpose");
+        printf("\n3. Exit");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                simpleTranspose(a, b);
+
+                printf("\nTranspose using Simple Transpose:\n");
+                displaySparse(b);
+                break;
+
+            case 2:
+                fastTranspose(a, b);
+
+                printf("\nTranspose using Fast Transpose:\n");
+                displaySparse(b);
+                break;
+
+            case 3:
+                printf("\nExiting program.\n");
+                return 0;
+
+            default:
+                printf("\nInvalid choice!\n");
+        }
     }
 
     return 0;
 }
 
+/* Function to read matrix */
 
-/*
-    Read the matrix and directly store
-    non-zero elements in sparse form.
-
-    a[0]:
-    row   = number of rows
-    col   = number of columns
-    value = number of non-zero elements
-*/
-void readMatrix(sparse a[], int *rows, int *cols)
+void readMatrix(int matrix[MAX][MAX], int *rows, int *cols)
 {
     int i, j;
-    int value;
-    int k = 1;
 
-    a[0].row = *rows;
-    a[0].col = *cols;
-    a[0].value = 0;
+    printf("Enter the number of rows: ");
+    scanf("%d", rows);
+
+    printf("Enter the number of columns: ");
+    scanf("%d", cols);
+
+    if (*rows <= 0 || *cols <= 0 ||
+        *rows > MAX || *cols > MAX)
+    {
+        printf("Invalid matrix size\n");
+        exit(1);
+    }
+
+    printf("Enter the elements of the matrix:\n");
 
     for (i = 0; i < *rows; i++)
     {
         for (j = 0; j < *cols; j++)
         {
-            scanf("%d", &value);
-
-            if (value != 0)
-            {
-                a[k].row = i;
-                a[k].col = j;
-                a[k].value = value;
-
-                k++;
-                a[0].value++;
-            }
+            scanf("%d", &matrix[i][j]);
         }
     }
 }
 
+/* Function to convert matrix into sparse form */
 
-/* Display sparse matrix in 3-tuple form */
-void displaySparse(sparse a[])
-{
-    int i;
-
-    for (i = 0; i <= a[0].value; i++)
-    {
-        printf("%d %d %d\n",
-               a[i].row,
-               a[i].col,
-               a[i].value);
-    }
-}
-
-
-/*
-    Simple Transpose
-
-    Time Complexity:
-    O(columns * non-zero terms)
-*/
-void simpleTranspose(sparse a[], sparse b[])
+int convertToSparse(int matrix[MAX][MAX],
+                    int rows, int cols, sparse a[])
 {
     int i, j;
     int k = 1;
 
-    /* Header of transposed matrix */
-    b[0].row = a[0].col;
-    b[0].col = a[0].row;
-    b[0].value = a[0].value;
+    a[0].row = rows;
+    a[0].col = cols;
 
-    /*
-        Process each column of the
-        original matrix.
-    */
-    for (i = 0; i < a[0].col; i++)
+    for (i = 0; i < rows; i++)
     {
-        /*
-            Search all non-zero elements
-            for the current column.
-        */
-        for (j = 1; j <= a[0].value; j++)
+        for (j = 0; j < cols; j++)
         {
-            if (a[j].col == i)
+            if (matrix[i][j] != 0)
             {
-                b[k].row = a[j].col;
-                b[k].col = a[j].row;
-                b[k].value = a[j].value;
+                if (k == MAX)
+                {
+                    printf("Too many non-zero elements\n");
+                    exit(1);
+                }
+
+                a[k].row = i;
+                a[k].col = j;
+                a[k].value = matrix[i][j];
 
                 k++;
             }
         }
     }
+
+    a[0].value = k - 1;
+
+    return k;
 }
 
+/* Function to display sparse matrix */
 
-/*
-    Fast Transpose
+void displaySparse(sparse a[])
+{
+    int i;
 
-    rowTerms[i] stores the number of
-    non-zero elements in column i.
+    printf("Row\tColumn\tValue\n");
 
-    startingPos[i] stores the starting
-    position of column i in the result.
+    for (i = 0; i <= a[0].value; i++)
+    {
+        printf("%d\t%d\t%d\n",
+               a[i].row, a[i].col, a[i].value);
+    }
+}
 
-    Time Complexity:
-    O(columns + non-zero terms)
-*/
+/* Function for simple transpose */
+
+void simpleTranspose(sparse a[], sparse b[])
+{
+    int i, j;
+    int current = 1;
+
+    b[0].row = a[0].col;
+    b[0].col = a[0].row;
+    b[0].value = a[0].value;
+
+    for (i = 0; i < a[0].col; i++)
+    {
+        for (j = 1; j <= a[0].value; j++)
+        {
+            if (a[j].col == i)
+            {
+                b[current].row = a[j].col;
+                b[current].col = a[j].row;
+                b[current].value = a[j].value;
+
+                current++;
+            }
+        }
+    }
+}
+
+/* Function for fast transpose */
+
 void fastTranspose(sparse a[], sparse b[])
 {
-    static int rowTerms[MAX_COLUMNS];
-    static int startingPos[MAX_COLUMNS];
+    int rowTerms[MAX];
+    int startingPos[MAX];
 
     int i, j;
     int numCols = a[0].col;
     int numTerms = a[0].value;
 
-    /* Header of transposed matrix */
-    b[0].row = numCols;
-    b[0].col = a[0].row;
-    b[0].value = numTerms;
+    /* Handle empty sparse matrix */
 
-    /* No non-zero elements */
     if (numTerms == 0)
     {
+        b[0].row = a[0].col;
+        b[0].col = a[0].row;
+        b[0].value = 0;
         return;
     }
 
-    /*
-        Initialize rowTerms.
-    */
+    /* Initialize rowTerms */
+
     for (i = 0; i < numCols; i++)
     {
         rowTerms[i] = 0;
     }
 
-    /*
-        Count non-zero elements
-        in each column.
-    */
+    /* Count elements in each column */
+
     for (i = 1; i <= numTerms; i++)
     {
         rowTerms[a[i].col]++;
     }
 
-    /*
-        Calculate starting position
-        of each column.
-    */
+    /* Calculate starting positions */
+
     startingPos[0] = 1;
 
     for (i = 1; i < numCols; i++)
     {
-        startingPos[i] =
-            startingPos[i - 1] + rowTerms[i - 1];
+        startingPos[i] = startingPos[i - 1]
+                         + rowTerms[i - 1];
     }
 
-    /*
-        Place each element directly
-        in its correct position.
-    */
+    /* Header of transposed matrix */
+
+    b[0].row = a[0].col;
+    b[0].col = a[0].row;
+    b[0].value = numTerms;
+
+    /* Place elements in transposed matrix */
+
     for (i = 1; i <= numTerms; i++)
     {
-        j = a[i].col;
+        j = startingPos[a[i].col];
 
-        b[startingPos[j]].row = a[i].col;
-        b[startingPos[j]].col = a[i].row;
-        b[startingPos[j]].value = a[i].value;
+        b[j].row = a[i].col;
+        b[j].col = a[i].row;
+        b[j].value = a[i].value;
 
-        startingPos[j]++;
+        startingPos[a[i].col]++;
     }
 }
