@@ -36,24 +36,24 @@ int main()
 {
     char postfix[MAX];
     int i, a, b, result;
-    int num;
+    
 
     printf("Enter postfix expression: ");
     fgets(postfix, MAX, stdin);
 
     i = 0;
 
-    while (postfix[i] != '\0' && postfix[i] != '\n')
+    while (postfix[i] != '\0')
     {
-        if (postfix[i] == ' ' || postfix[i] == '\t')
+        if (postfix[i] == ' ' || postfix[i] == '\n')
         {
             i++;
         }
-        else if (isdigit((unsigned char)postfix[i]))
+        else if (isdigit(postfix[i]))
         {
-            num = 0;
+            int num = 0;
 
-            while (isdigit((unsigned char)postfix[i]))
+            while (isdigit(postfix[i]))
             {
                 num = num * 10 + (postfix[i] - '0');
                 i++;
@@ -61,16 +61,14 @@ int main()
 
             push(num);
 
-            if (error)
-                return 1;
+           
         }
         else
         {
             b = pop();
             a = pop();
 
-            if (error)
-                return 1;
+            
 
             switch (postfix[i])
             {
@@ -113,17 +111,8 @@ int main()
 
             push(result);
 
-            if (error)
-                return 1;
-
             i++;
         }
-    }
-
-    if (top != 0)
-    {
-        printf("Invalid postfix expression\n");
-        return 1;
     }
 
     printf("Result = %d\n", pop());
