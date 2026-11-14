@@ -4,8 +4,8 @@
 
 struct node
 {
-    int info;
-    struct node *link;
+    int data;
+    struct node *next;
 };
 
 typedef struct node *NODE;
@@ -21,15 +21,15 @@ void push()
 
     if (temp == NULL)
     {
-        printf("Stack Overflow\n");
+        printf("memory allocation failed\n");
         return;
     }
 
     printf("Enter the item to be pushed: ");
     scanf("%d", &item);
 
-    temp->info = item;
-    temp->link = top;
+    temp->data = item;
+    temp->next = top;
     top = temp;
 }
 
@@ -44,9 +44,9 @@ void pop()
     }
 
     temp = top;
-    printf("Deleted item is %d\n", temp->info);
+    printf("Deleted item is %d\n", temp->data);
 
-    top = top->link;
+    top = top->next;
     free(temp);
 }
 
@@ -65,8 +65,8 @@ void display()
 
     while (temp != NULL)
     {
-        printf("%d\n", temp->info);
-        temp = temp->link;
+        printf("%d\n", temp->data);
+        temp = temp->next;
     }
 }
 
